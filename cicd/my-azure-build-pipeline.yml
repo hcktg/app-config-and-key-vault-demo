@@ -1,0 +1,33 @@
+name: $(Build.Repository.Name)$(Date:.yyyyMMdd)$(Rev:.r)
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: npm install
+  displayName: 'Install node module dependencies from NPM'
+
+- script: npm run build
+  displayName: 'Build source code into a runtime'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: './dist'
+    Contents: '**/*'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy runtime into root of build-artifact staging directory'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathToPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'MyBuiltWebsite'
+  displayName: 'Publish build-artifact from staging directory to named artifact'
